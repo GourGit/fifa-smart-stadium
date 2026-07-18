@@ -12,7 +12,7 @@ import { aiRateLimiter } from './security.js';
 
 // ─── Key helpers ──────────────────────────────────────────────────────────
 
-function resolveKey(overrideKey) {
+export function resolveKey(overrideKey) {
   const key = (overrideKey && overrideKey.trim()) ? overrideKey.trim() : ENV_API_KEY;
   if (!key || key === 'your_openrouter_api_key_here') {
     throw new Error('NO_API_KEY');
