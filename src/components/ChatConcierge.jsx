@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { sendConciergeMessage, parseGeminiError } from '../services/gemini';
 import { fetchLiveMatches, fetchRealWeather, STADIUMS } from '../services/realData';
+import { sanitizeInput, sanitizeForDisplay } from '../services/security';
 
 const LANGUAGES = [
   { code: 'en', label: '🇺🇸 EN' },
@@ -110,7 +111,7 @@ export default function ChatConcierge({ apiKeyOverride }) {
   };
 
   const handleSend = async (text) => {
-    const userText = (text || input).trim();
+    const userText = sanitizeInput((text || input).trim());
     if (!userText || loading) return;
     setError('');
 
@@ -130,7 +131,7 @@ export default function ChatConcierge({ apiKeyOverride }) {
 
     try {
       const reply = await sendConciergeMessage(apiKeyOverride, history, userText, liveContext);
-      setMessages((prev) => [...prev, { role: 'model', text: reply }]);
+      setMessages((prev) => [...prev, { role: 'model', text: sanitizeForDisplay(reply) }]);
     } catch (err) {
       setError(parseGeminiError(err));
       setMessages((prev) => prev.slice(0, -1));

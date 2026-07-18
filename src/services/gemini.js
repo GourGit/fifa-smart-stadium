@@ -8,6 +8,8 @@ const MODEL = 'google/gemini-3.5-flash';  // Gemini 3.5 Flash via OpenRouter
 
 const ENV_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 
+import { aiRateLimiter } from './security.js';
+
 // ─── Key helpers ──────────────────────────────────────────────────────────
 
 function resolveKey(overrideKey) {
@@ -53,6 +55,12 @@ export function parseGeminiError(err) {
 // ─── Core fetch helper ────────────────────────────────────────────────────
 
 async function callOpenRouter(apiKey, messages) {
+  // Client-side rate limiting
+  if (!aiRateLimiter.canProceed()) {
+    const wait = Math.ceil(aiRateLimiter.getWaitTime() / 1000);
+    throw new Error(`429 Rate limited — please wait ${wait}s before sending another message.`);
+  }
+
   const response = await fetch(OPENROUTER_BASE, {
     method: 'POST',
     headers: {
